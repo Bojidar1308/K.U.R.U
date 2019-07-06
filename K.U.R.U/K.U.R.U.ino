@@ -1,57 +1,67 @@
-int leftMotorPin1 = 11; 
-int leftMotorPin2 = 10; 
-int rightMotorPin1 = 12; 
-int rightMotorPin2 = 13; 
+// Declaring variables for the motors:
+byte leftMotorPin1 = 11; 
+byte leftMotorPin2 = 10; 
+byte rightMotorPin1 = 12; 
+byte rightMotorPin2 = 13; 
 
-int turnSignalFL = 4; 
-int turnSignalFR = 6; 
-int turnSignalRL = 2; 
-int turnSignalRR = 9; 
+// Declaring variables for the turn signals:
+byte turnSignalFL = 4; 
+byte turnSignalFR = 6; 
+byte turnSignalRL = 2; 
+byte turnSignalRR = 9; 
 
-int stopLightRL = 3; 
-int stopLightRR = 8; 
+// Declaring variables for the stop lights:
+byte stopLightRL = 3; 
+byte stopLightRR = 8; 
 
-int lightFL = 5; 
-int lightFR = 7; 
+// Declaring variables for the head lights:
+byte headLightFL = 5; 
+byte headLightFR = 7; 
 
 int state;
-int flag=0;        
-int stateStop=0;
+byte flag=0;        
+byte stateStop=0;
 
 void setup() 
 {
-    // sets the pins as outputs:
+    // Setting up the motor pins as outputs:
     pinMode(leftMotorPin1, OUTPUT);
     pinMode(leftMotorPin2, OUTPUT);
     pinMode(rightMotorPin1, OUTPUT);
     pinMode(rightMotorPin2, OUTPUT);
 
+    // Setting up the turn signal pins as outputs:
     pinMode(turnSignalFL, OUTPUT);
     pinMode(turnSignalFR, OUTPUT);
     pinMode(turnSignalRL, OUTPUT);
     pinMode(turnSignalRR, OUTPUT);
 
+    // Setting up the stop light pins as outputs:
     pinMode(stopLightRL, OUTPUT);
     pinMode(stopLightRR, OUTPUT);
+
+    // Setting up the head light pins as outputs:
+    pinMode(headLightFL, OUTPUT);
+    pinMode(headLightFR, OUTPUT);
     
-    pinMode(lightFL, OUTPUT);
-    pinMode(lightFR, OUTPUT);
-    
-    // initialize serial communication at 9600 bits per second:
+    // Initializing serial communication at 9600 bits per second:
     Serial.begin(9600);
 }
 
 void loop() 
 {
+    // Beginning to read the serial input:
     if(Serial.available() > 0)
     {     
       state = Serial.read();   
       flag=0;
     }   
-     if (state == 'F') 
-    {
-      digitalWrite(lightFL, HIGH);
-      digitalWrite(lightFR, HIGH);
+    
+     switch(state)
+     {
+      case 'F':
+      digitalWrite(headLightFL, HIGH);
+      digitalWrite(headLightFR, HIGH);
       digitalWrite(stopLightRL, LOW);
       digitalWrite(stopLightRR, LOW);
       digitalWrite(turnSignalFL, LOW);
@@ -68,17 +78,17 @@ void loop()
         Serial.println("FORWARD");
         flag=1;
       }
-    }
-    else if (state == 'R') 
-    {
-      digitalWrite(lightFL, HIGH);
-      digitalWrite(lightFR, HIGH);
+      break;
+
+      case 'R':
+      digitalWrite(headLightFL, HIGH);
+      digitalWrite(headLightFR, HIGH);
       digitalWrite(stopLightRL, LOW);
       digitalWrite(stopLightRR, LOW);
-      digitalWrite(turnSignalFL, HIGH);
-      digitalWrite(turnSignalFR, LOW);
-      digitalWrite(turnSignalRL, HIGH);
-      digitalWrite(turnSignalRR, LOW);
+      digitalWrite(turnSignalFL, LOW);
+      digitalWrite(turnSignalFR, HIGH);
+      digitalWrite(turnSignalRL, LOW);
+      digitalWrite(turnSignalRR, HIGH);
       
       digitalWrite(leftMotorPin1, HIGH); 
       digitalWrite(leftMotorPin2, LOW); 
@@ -92,56 +102,60 @@ void loop()
       delay(1500);
       state=3;
       stateStop=1;
-    }
-     else if (state == 'S' || stateStop == 1) 
-    {
-      digitalWrite(lightFL, HIGH);
-      digitalWrite(lightFR, HIGH);
-      digitalWrite(stopLightRL, HIGH);
-      digitalWrite(stopLightRR, HIGH);
-      digitalWrite(turnSignalFL, LOW);
+      break;
+
+      case 'S':
+      if(stateStop == 1)
+      {
+        digitalWrite(headLightFL, HIGH);
+        digitalWrite(headLightFR, HIGH);
+        digitalWrite(stopLightRL, HIGH);
+        digitalWrite(stopLightRR, HIGH);
+        digitalWrite(turnSignalFL, LOW);
+        digitalWrite(turnSignalFR, LOW);
+        digitalWrite(turnSignalRL, LOW);
+        digitalWrite(turnSignalRR, LOW);
+      
+        digitalWrite(leftMotorPin1, LOW); 
+        digitalWrite(leftMotorPin2, LOW); 
+        digitalWrite(rightMotorPin1, LOW);
+        digitalWrite(rightMotorPin2, LOW);
+        if(flag == 0)
+        {
+          Serial.println("STOP");
+          flag=1;
+        }
+        stateStop=0;
+      }
+      break;
+
+      case 'L':
+      digitalWrite(headLightFL, HIGH);
+      digitalWrite(headLightFR, HIGH);
+      digitalWrite(stopLightRL, LOW);
+      digitalWrite(stopLightRR, LOW);      
+      digitalWrite(turnSignalFL, HIGH);
       digitalWrite(turnSignalFR, LOW);
-      digitalWrite(turnSignalRL, LOW);
+      digitalWrite(turnSignalRL, HIGH);
       digitalWrite(turnSignalRR, LOW);
       
       digitalWrite(leftMotorPin1, LOW); 
       digitalWrite(leftMotorPin2, LOW); 
       digitalWrite(rightMotorPin1, LOW);
-      digitalWrite(rightMotorPin2, LOW);
+      digitalWrite(rightMotorPin2, HIGH);
       if(flag == 0)
       {
-        Serial.println("STOP");
-        flag=1;
-      }
-      stateStop=0;
-      }
-    else if (state == 'L') 
-    {
-      digitalWrite(lightFL, HIGH);
-      digitalWrite(lightFR, HIGH);
-      digitalWrite(stopLightRL, LOW);
-      digitalWrite(stopLightRR, LOW);
-      digitalWrite(turnSignalFL, LOW);
-      digitalWrite(turnSignalFR, HIGH);
-      digitalWrite(turnSignalRL, LOW);
-      digitalWrite(turnSignalRR, HIGH);
-      
-      digitalWrite(leftMotorPin1, LOW); 
-      digitalWrite(leftMotorPin2, LOW); 
-      digitalWrite(rightMotorPin1, LOW);
-      digitalWrite(rightMotorPin2, HIGH);
-      if(flag == 0){
         Serial.println("RIGHT");
         flag=1;
       }
       delay(1500);
       state=3;
       stateStop=1;
-    }
-     else if (state == 'B') 
-    {
-      digitalWrite(lightFL, LOW);
-      digitalWrite(lightFR, LOW);
+      break;
+
+      case 'B':
+      digitalWrite(headLightFL, LOW);
+      digitalWrite(headLightFR, LOW);
       digitalWrite(stopLightRL, LOW);
       digitalWrite(stopLightRR, LOW);
       digitalWrite(turnSignalFL, HIGH);
@@ -158,5 +172,6 @@ void loop()
         Serial.println("REVERSE");
         flag=1;
       }
-    }
+      break;
+     }
 }
